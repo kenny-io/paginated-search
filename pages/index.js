@@ -10,8 +10,36 @@ export default function Home() {
     term: "",
     hitsPerPage: 8,
   });
-
-  const client = new MeiliSearch({ host: "http://localhost:7700" });
+  const [loading, setLoading] = useState(false);
+  const client = new MeiliSearch({
+    host: "HOST_URL",
+    apiKey: "API_KEY",
+  });
+  const getNextPage = async () => {
+    setLoading(true);
+    setPage(page + 1);
+    await client
+      .index("movies")
+      .search(searchQuery.term, {
+        hitsPerPage: searchQuery.hitsPerPage,
+        page: page,
+      })
+      .then((results) => {
+        setSearchResults(results.hits);
+        setLoading(false);
+      });
+  };
+  const searchMovies = async (e) => {
+    setSearchQuery({ ...searchQuery, term: e.target.value });
+    client
+      .index("movies")
+      .search(searchQuery.term, {
+        hitsPerPage: searchQuery.hitsPerPage,
+      })
+      .then((results) => {
+        setSearchResults(results.hits);
+      });
+  };
   return (
     <div className={styles.container}>
       <Head>
@@ -26,49 +54,35 @@ export default function Home() {
           className={styles.search}
           type="text"
           placeholder="Search for a movie..."
-          onChange={(e) => {
-            setSearchQuery({ ...searchQuery, term: e.target.value });
-            client
-              .index("movies")
-              .search(searchQuery.term, {
-                hitsPerPage: searchQuery.hitsPerPage,
-              })
-              .then((results) => {
-                setSearchResults(results.hits);
-              });
-          }}
+          onChange={(e) => searchMovies(e)}
         />
         <div className={styles.grid}>
           {searchResults.map((resource) => (
-            <div key={resource.title} className={styles.card}>
+            <div key={resource.id} className={styles.card}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={resource.poster}
                 alt={resource.name}
                 width={200}
                 height={300}
               />
-              <h3>{resource.title} &rarr;</h3>
-              <p>{resource.director}</p>
+              <h3>{resource.title}</h3>
+              <p>{resource.overview.substring(0, 50)}...</p>
             </div>
           ))}
         </div>
-        <button
-          className={styles.button}
-          onClick={async () => {
-            setPage(page + 1);
-            await client
-              .index("movies")
-              .search(searchQuery.term, {
-                hitsPerPage: searchQuery.hitsPerPage,
-                page: page,
-              })
-              .then((results) => {
-                setSearchResults(results.hits);
-              });
-          }}
-        >
-          Load more
-        </button>
+        {searchResults.length > 0 && (
+          <div>
+            <p>Page {page}</p>
+            <button
+              type="submit"
+              className={styles.button}
+              onClick={() => getNextPage()}
+            >
+              {loading ? "Loading..." : "Load More"}
+            </button>
+          </div>
+        )}
       </main>
 
       <footer className={styles.footer}>

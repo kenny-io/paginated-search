@@ -8,4 +8,7 @@ First, run the development server:
 npm run dev
 # or
 yarn dev
+
 ```
+
+License [MIT](https://choosealicense.com/licenses/mit/)
