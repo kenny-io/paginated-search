@@ -12,8 +12,8 @@ export default function Home() {
   });
   const [loading, setLoading] = useState(false);
   const client = new MeiliSearch({
-    host: "HOST_URL",
-    apiKey: "API_KEY",
+    host: process.env.NEXT_PUBLIC_MEILI_HOST,
+    apiKey: process.env.NEXT_PUBLIC_MEILI_TOKEN,
   });
   const getNextPage = async () => {
     setLoading(true);
